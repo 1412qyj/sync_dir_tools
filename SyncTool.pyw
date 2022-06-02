@@ -4,7 +4,7 @@ Author: QYJ
 version: 
 Date: 2022-06-01 16:13:45
 LastEditors: QYJ
-LastEditTime: 2022-06-02 08:22:32
+LastEditTime: 2022-06-02 16:35:44
 '''
 import os
 import PySimpleGUI as sg
@@ -33,11 +33,15 @@ def copy_files(src_path, dist_path):
         os.makedirs(dist_path)
 
     if os.path.exists(src_path):
-        for root, dirs, files in os.walk(src_path):
+        for root, _, files in os.walk(src_path):
             for file in files:
                 src_file = os.path.join(root, file)
-                shutil.copy(src_file, dist_path)
-                print(src_file, "\nhas been copied to\n", dist_path)
+                dist_file = root.replace(src_path, dist_path)
+                if not os.path.exists(dist_file):
+                    os.makedirs(dist_file)
+                shutil.copy(src_file, dist_file)
+        
+        print(src_file, "\nhas been copied to\n", dist_path)
     else:
         print("path:", src_path, "Not Exist")
 
@@ -102,10 +106,13 @@ if __name__ == '__main__':
                     window['target_folders'].update(values=cur_folders)
 
         if event == "删除":
-            cur_folders = window['target_folders'].get_list_values()
-            for index in window['target_folders'].get_indexes():
-                del cur_folders[index]
-            window['target_folders'].update(values=cur_folders)
+            try:
+                cur_folders = window['target_folders'].get_list_values()
+                for index in window['target_folders'].get_indexes()[::-1]:
+                    del cur_folders[index]
+                window['target_folders'].update(values=cur_folders)
+            except Exception as E:
+                print(str(E))
 
         if event == "同步":
             cur_folders = window['target_folders'].get_list_values()
